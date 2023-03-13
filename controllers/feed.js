@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs');
 
 const Post = require('../models/feed');
-const { getIO } = require('../sockets');
 
 exports.getPosts = async (req, res, next) => {
     const currentPage = req.query.page;
@@ -168,9 +167,4 @@ exports.deletePost = async (req, res, next) => {
 
         next(err);
     }
-};
-
-const clearImage = (imageUrl) => {
-    const imagePath = path.join(__dirname, '..', imageUrl);
-    fs.unlink(imagePath, (err) => console.log(err));
 };
