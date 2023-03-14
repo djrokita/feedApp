@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const ws = require('ws');
+const { useServer } = require('graphql-ws/lib/use/ws');
 const { v4 } = require('uuid');
 const { graphqlHTTP } = require('express-graphql');
 
@@ -80,8 +82,15 @@ mongoose
     .then(() => {
         console.log('NEW USER CONNECTED');
         const server = app.listen(8080);
-        ioService.init(server).on('connection', (socket) => {
-            console.log('webSocket connected', socket.id);
+
+        const wss = new ws.Server({
+            server,
         });
+
+        useServer({ schema, roots: rootValue }, server);
+
+        // ioService.init(server).on('connection', (socket) => {
+        //     console.log('webSocket connected', socket.id);
+        // });
     })
     .catch((err) => console.log(err));
