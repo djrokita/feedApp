@@ -2,7 +2,7 @@ const jws = require('jsonwebtoken');
 const Post = require('../models/feed');
 const { JWT_SECRET } = require('../constants');
 
-exports.authentication = async (req, res, next) => {
+module.exports = async (req, res, next) => {
     const tokenHeader = req.get('Authentication');
 
     if (!tokenHeader) {

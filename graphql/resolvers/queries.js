@@ -1,9 +1,11 @@
 const Post = require('../../models/feed');
 const User = require('../../models/user');
+const EVENTS = require('../subEvents');
+const pubsub = require('../../utils/pubsub');
 
 module.exports = {
-    posts: async function (args, req) {
-        if (!req.isAuth) {
+    posts: async function (_, args, context) {
+        if (!context.isAuth) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -17,11 +19,13 @@ module.exports = {
         const totalItems = await Post.find().countDocuments();
         const posts = await Post.find().skip(skipValue).limit(pageLimit).populate('creator');
 
+        // pubsub.publish(EVENTS.TEST_EVENT, { id: '123', name: 'Kasia' });
+
         return { posts, totalItems };
     },
 
-    post: async function ({ postId }, req) {
-        if (!req.isAuth) {
+    post: async function (_, { postId }, context) {
+        if (!context.isAuth) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -40,15 +44,15 @@ module.exports = {
         return post;
     },
 
-    user: async function (_, req) {
-        if (!req.isAuth || !req.userId) {
+    user: async function (_, _, context) {
+        if (!context.isAuth || !context.userId) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
             throw error;
         }
 
-        const user = await User.findById(req.userId);
+        const user = await User.findById(context.userId);
 
         if (!user) {
             const error = new Error('User not found');

@@ -6,9 +6,11 @@ const Post = require('../../models/feed');
 const User = require('../../models/user');
 const { JWT_SECRET } = require('../../constants');
 const { clearImage } = require('../../utils/image');
+const EVENTS = require('../subEvents');
+const pubsub = require('../../utils/pubsub');
 
 module.exports = {
-    loginUser: async function (args, req) {
+    loginUser: async function (_, args) {
         const { email, password } = args.user;
 
         const errors = [];
@@ -43,12 +45,12 @@ module.exports = {
             throw error;
         }
 
-        const token = jws.sign({ email, userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jws.sign({ email, userId: user.id }, JWT_SECRET, { expiresIn: '3h' });
 
         return { token, userId: user.id };
     },
 
-    signupUser: async function (args, req) {
+    signupUser: async function (_, args) {
         const { email, name, password } = args.user;
 
         const errors = [];
@@ -91,8 +93,8 @@ module.exports = {
         return { user: newUser._id };
     },
 
-    createPost: async function ({ post }, req) {
-        if (!req.isAuth || !req.userId) {
+    createPost: async function (_, { post }, context) {
+        if (!context.isAuth || !context.userId) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -117,7 +119,7 @@ module.exports = {
             throw error;
         }
 
-        const user = await User.findById(req.userId);
+        const user = await User.findById(context.userId);
 
         if (!user) {
             const error = new Error('User not found');
@@ -135,11 +137,13 @@ module.exports = {
 
         // io.getIO().emit('posts', { type: 'create', post: populatedPost, userId: req.userId });
 
+        pubsub.publish(EVENTS.POST, { action: 'create', post: newPost });
+
         return newPost;
     },
 
-    updatePost: async function ({ id, post }, req) {
-        if (!req.isAuth || !req.userId) {
+    updatePost: async function (_, { id, post }, context) {
+        if (!context.isAuth || !context.userId) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -155,7 +159,7 @@ module.exports = {
             throw error;
         }
 
-        if (req.userId !== storedPost.creator._id.toString()) {
+        if (context.userId !== storedPost.creator._id.toString()) {
             const error = new Error('Not authorized');
             error.code = 403;
 
@@ -180,15 +184,15 @@ module.exports = {
             throw error;
         }
 
-        // io.getIO().emit('posts', { type: 'create', post: populatedPost, userId: req.userId });
+        // io.getIO().emit('posts', { type: 'create', post: populatedPost, userId: context.userId });
 
         storedPost.title = post.title;
         storedPost.content = post.content;
         let imageUrl = '';
 
-        if (req.file) {
+        if (context.file) {
             clearImage(post.imageUrl);
-            imageUrl = req.file.path.replace('\\', '/');
+            imageUrl = context.file.path.replace('\\', '/');
         } else {
             imageUrl = post.imageUrl;
         }
@@ -198,13 +202,15 @@ module.exports = {
         const updatedPost = await storedPost.save();
         const populatedPost = await updatedPost.populate('creator', 'name');
 
+        pubsub.publish(EVENTS.POST, { action: 'update', post });
+
         return populatedPost;
     },
 
     // io.getIO().emit('posts', { type: 'update', post: populatedPost, userId: req.userId });
 
-    deletePost: async function ({ postId }, req) {
-        if (!req.isAuth || !req.userId) {
+    deletePost: async function (_, { postId }, context) {
+        if (!context.isAuth || !context.userId) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -220,7 +226,7 @@ module.exports = {
             throw error;
         }
 
-        if (req.userId !== post.creator.toString()) {
+        if (context.userId !== post.creator.toString()) {
             const error = new Error('Not authorized');
             error.code = 403;
 
@@ -230,11 +236,13 @@ module.exports = {
         await post.remove();
         clearImage(post.imageUrl);
 
+        pubsub.publish(EVENTS.POST_DELETE, { id: post.id });
+
         return { message: 'Removed successfully', id: postId };
     },
 
-    updateStatus: async function ({ status }, req) {
-        if (!req.isAuth || !req.userId) {
+    updateStatus: async function (_, { status }, context) {
+        if (!context.isAuth || !context.userId) {
             const error = new Error('Not authenticated');
             error.code = 401;
 
@@ -248,7 +256,7 @@ module.exports = {
             throw error;
         }
 
-        const user = await User.findById(req.userId);
+        const user = await User.findById(context.userId);
 
         if (!user) {
             const error = new Error('User not found');

@@ -39,6 +39,10 @@ module.exports = buildSchema(`
         updatedAt: String!
     }
 
+    type IdPost {
+        id: ID!
+    }
+
     type Posts {
         posts: [Post]!
         totalItems: Int!
@@ -52,8 +56,18 @@ module.exports = buildSchema(`
     type MsgRes {
         message: String!
         id: ID!
-    } 
+    }
+
+    type Dupa {
+        id: String!
+        name: String!
+    }
     
+    type PostSubscrib {
+        post: Post!
+        action: String!
+    }
+
     type Query {
         posts(page: Int): Posts!
         post(postId: ID!): Post!
@@ -67,5 +81,11 @@ module.exports = buildSchema(`
         updatePost(id: ID!, post: PostData!): Post!
         deletePost(postId: ID!): MsgRes!
         updateStatus(status: String!): User! 
+    }
+
+    type Subscription {
+        test: Dupa!
+        post: PostSubscrib!
+        deletePost: IdPost!
     }
 `);

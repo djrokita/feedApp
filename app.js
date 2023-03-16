@@ -2,22 +2,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-const ws = require('ws');
+const { WebSocketServer } = require('ws');
 const { useServer } = require('graphql-ws/lib/use/ws');
 const { v4 } = require('uuid');
 const { graphqlHTTP } = require('express-graphql');
 
 const path = require('path');
 const cors = require('./utils/cors');
-const ioService = require('./sockets');
-const schema = require('./graphql/schema');
-const rootValue = require('./graphql/resolvers');
+const schema = require('./graphql/typeDef');
 const { MONGO_PATH } = require('./constants');
-const { authentication: auth } = require('./middlewares/auth');
+const auth = require('./middlewares/auth');
 
 const app = express();
-
-let ioSocket;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -57,9 +53,8 @@ app.use(
     '/graphql',
     graphqlHTTP({
         schema,
-        rootValue,
         graphiql: true,
-        formatError(err) {
+        customFormatErrorFn(err) {
             if (!err.originalError) {
                 return err;
             }
@@ -83,14 +78,30 @@ mongoose
         console.log('NEW USER CONNECTED');
         const server = app.listen(8080);
 
-        const wss = new ws.Server({
+        const wss = new WebSocketServer({
             server,
         });
 
-        useServer({ schema, roots: rootValue }, server);
-
-        // ioService.init(server).on('connection', (socket) => {
-        //     console.log('webSocket connected', socket.id);
-        // });
+        useServer(
+            {
+                schema,
+                onConnect: (ctx) => {
+                    console.log('Connect');
+                },
+                onSubscribe: (ctx, msg) => {
+                    console.log('Subscribe');
+                },
+                onNext: (ctx, msg, args, result) => {
+                    console.debug('Next', result);
+                },
+                onError: (ctx, msg, errors) => {
+                    console.error('Error');
+                },
+                onComplete: (ctx, msg) => {
+                    console.log('Complete');
+                },
+            },
+            wss
+        );
     })
     .catch((err) => console.log(err));
