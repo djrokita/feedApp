@@ -135,9 +135,7 @@ module.exports = {
             creator: user,
         }).save();
 
-        // io.getIO().emit('posts', { type: 'create', post: populatedPost, userId: req.userId });
-
-        pubsub.publish(EVENTS.POST, { action: 'create', post: newPost });
+        pubsub.publish(EVENTS.POST_CHANGE, { action: 'create', post: newPost, userId: context.userId });
 
         return newPost;
     },

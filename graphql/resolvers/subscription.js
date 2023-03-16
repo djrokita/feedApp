@@ -9,8 +9,8 @@ module.exports = {
             return payload;
         },
     },
-    post: {
-        subscribe: () => pubsub.asyncIterator(EVENTS.POST),
+    changePost: {
+        subscribe: () => pubsub.asyncIterator(EVENTS.POST_CHANGE),
         resolve: (payload) => {
             console.log('🚀 ~ file: subscription.js:10 ~ payload:', payload);
             return payload;

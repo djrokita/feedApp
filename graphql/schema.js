@@ -66,6 +66,7 @@ module.exports = buildSchema(`
     type PostSubscrib {
         post: Post!
         action: String!
+        userId: ID!
     }
 
     type Query {
@@ -85,7 +86,7 @@ module.exports = buildSchema(`
 
     type Subscription {
         test: Dupa!
-        post: PostSubscrib!
+        changePost: PostSubscrib!
         deletePost: IdPost!
     }
 `);
