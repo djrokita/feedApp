@@ -182,8 +182,6 @@ module.exports = {
             throw error;
         }
 
-        // io.getIO().emit('posts', { type: 'create', post: populatedPost, userId: context.userId });
-
         storedPost.title = post.title;
         storedPost.content = post.content;
         let imageUrl = '';
@@ -200,12 +198,10 @@ module.exports = {
         const updatedPost = await storedPost.save();
         const populatedPost = await updatedPost.populate('creator', 'name');
 
-        pubsub.publish(EVENTS.POST, { action: 'update', post });
+        pubsub.publish(EVENTS.POST_CHANGE, { action: 'update', post: populatedPost, userId: context.userId });
 
         return populatedPost;
     },
-
-    // io.getIO().emit('posts', { type: 'update', post: populatedPost, userId: req.userId });
 
     deletePost: async function (_, { postId }, context) {
         if (!context.isAuth || !context.userId) {
