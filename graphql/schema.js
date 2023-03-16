@@ -15,7 +15,7 @@ module.exports = buildSchema(`
     input PostData {
         title: String!
         content: String!
-        imageUrl: String!
+        imageUrl: String
     }
 
     type User {
