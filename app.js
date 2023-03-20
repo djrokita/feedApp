@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const helmet = require('helmet');
+const morgan = require('morgan');
 const { WebSocketServer } = require('ws');
 const { useServer } = require('graphql-ws/lib/use/ws');
 const { v4 } = require('uuid');
@@ -11,6 +12,7 @@ const { graphqlHTTP } = require('express-graphql');
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
 const cors = require('./utils/cors');
 const schema = require('./graphql/typeDef');
 const auth = require('./middlewares/auth');
@@ -34,7 +36,8 @@ const fileFilter = (req, file, cb) => {
     return cb(null, false);
 };
 
-app.use(helmet());
+app.use(morgan('combined', { stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' }) }));
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors);
 app.use(bodyParser.json());
 app.use(multer({ storage, fileFilter }).single('image'));
