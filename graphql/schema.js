@@ -32,7 +32,7 @@ module.exports = buildSchema(`
     type Post {
         _id: ID!
         title: String!
-        imageUrl: String!
+        imageUrl: String
         content: String!
         creator: User!
         createdAt: String!

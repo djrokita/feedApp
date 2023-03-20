@@ -183,16 +183,11 @@ module.exports = {
 
         storedPost.title = post.title;
         storedPost.content = post.content;
-        let imageUrl = '';
 
-        if (context.file) {
-            clearImage(post.imageUrl);
-            imageUrl = context.file.path.replace('\\', '/');
-        } else {
-            imageUrl = post.imageUrl;
+        if (post.imageUrl !== storedPost.imageUrl) {
+            clearImage(storedPost.imageUrl);
+            storedPost.imageUrl = post.imageUrl;
         }
-
-        storedPost.imageUrl = imageUrl;
 
         const updatedPost = await storedPost.save();
         const populatedPost = await updatedPost.populate('creator', 'name');
