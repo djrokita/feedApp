@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const helmet = require('helmet');
 const { v4 } = require('uuid');
 
 require('dotenv').config();
@@ -34,6 +35,7 @@ const fileFilter = (req, file, cb) => {
     return cb(null, false);
 };
 
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors);
 app.use(bodyParser.json());
 app.use(multer({ storage, fileFilter }).single('image'));
