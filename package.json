@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon app.js",
+    "build": "node app.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +14,7 @@
     "@graphql-tools/schema": "^9.0.17",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-graphql": "^0.12.0",
     "graphql": "^15.8.0",

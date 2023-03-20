@@ -1,6 +1,5 @@
 const jws = require('jsonwebtoken');
 const Post = require('../models/feed');
-const { JWT_SECRET } = require('../constants');
 
 module.exports = async (req, res, next) => {
     const tokenHeader = req.get('Authentication');
@@ -16,7 +15,7 @@ module.exports = async (req, res, next) => {
     let decodedToken;
 
     try {
-        decodedToken = jws.verify(token, JWT_SECRET);
+        decodedToken = jws.verify(token, process.env.JWT_SECRET);
     } catch (err) {
         req.isAuth = false;
         return next();

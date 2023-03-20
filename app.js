@@ -7,10 +7,11 @@ const { useServer } = require('graphql-ws/lib/use/ws');
 const { v4 } = require('uuid');
 const { graphqlHTTP } = require('express-graphql');
 
+require('dotenv').config();
+
 const path = require('path');
 const cors = require('./utils/cors');
 const schema = require('./graphql/typeDef');
-const { MONGO_PATH } = require('./constants');
 const auth = require('./middlewares/auth');
 
 const app = express();
@@ -73,10 +74,10 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-    .connect(MONGO_PATH)
+    .connect(process.env.MONGO_PATH)
     .then(() => {
         console.log('NEW USER CONNECTED');
-        const server = app.listen(8080);
+        const server = app.listen(process.env.PORT || 8080);
 
         const wss = new WebSocketServer({
             server,
@@ -92,7 +93,7 @@ mongoose
                     console.log('Subscribe');
                 },
                 onNext: (ctx, msg, args, result) => {
-                    console.debug('Next', result);
+                    console.debug('Next');
                 },
                 onError: (ctx, msg, errors) => {
                     console.error('Error');

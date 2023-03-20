@@ -4,7 +4,6 @@ const validator = require('validator');
 
 const Post = require('../../models/feed');
 const User = require('../../models/user');
-const { JWT_SECRET } = require('../../constants');
 const { clearImage } = require('../../utils/image');
 const EVENTS = require('../subEvents');
 const pubsub = require('../../utils/pubsub');
@@ -45,7 +44,7 @@ module.exports = {
             throw error;
         }
 
-        const token = jws.sign({ email, userId: user.id }, JWT_SECRET, { expiresIn: '3h' });
+        const token = jws.sign({ email, userId: user.id }, process.env.JWT_SECRET, { expiresIn: '3h' });
 
         return { token, userId: user.id };
     },
