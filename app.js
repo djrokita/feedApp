@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const helmet = require('helmet');
 const { WebSocketServer } = require('ws');
 const { useServer } = require('graphql-ws/lib/use/ws');
 const { v4 } = require('uuid');
@@ -33,6 +34,7 @@ const fileFilter = (req, file, cb) => {
     return cb(null, false);
 };
 
+app.use(helmet());
 app.use(cors);
 app.use(bodyParser.json());
 app.use(multer({ storage, fileFilter }).single('image'));
