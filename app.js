@@ -4,13 +4,14 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const { v4 } = require('uuid');
 
+require('dotenv').config();
+
 const path = require('path');
 const feedRouter = require('./routes/feed');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const cors = require('./utils/cors');
 const ioService = require('./sockets');
-const { MONGO_PATH } = require('./constants');
 
 const app = express();
 
@@ -48,7 +49,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-    .connect(MONGO_PATH)
+    .connect(process.env.MONGO_PATH)
     .then(() => {
         console.log('NEW USER CONNECTED');
         const server = app.listen(8080);

@@ -1,6 +1,5 @@
 const jws = require('jsonwebtoken');
 const Post = require('../models/feed');
-const { JWT_SECRET } = require('../constants');
 
 exports.isAuthenticated = async (req, res, next) => {
     const tokenHeader = req.get('Authentication');
@@ -15,7 +14,7 @@ exports.isAuthenticated = async (req, res, next) => {
 
         const token = tokenHeader.replace('Bearer', '').trim();
 
-        const data = jws.verify(token, JWT_SECRET);
+        const data = jws.verify(token, process.env.JWT_SECRET);
         req.userId = data.userId;
     } catch (err) {
         if (!err.statusCode) {

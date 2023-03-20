@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcrypt');
 const jws = require('jsonwebtoken');
-const { JWT_SECRET } = require('../constants');
 
 const User = require('../models/user');
 
@@ -47,7 +46,6 @@ exports.signup = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
-    let storedUser;
 
     try {
         const user = await User.findOne({ email });
@@ -64,7 +62,7 @@ exports.login = async (req, res, next) => {
         if (isValidPassword) {
             const userId = user._id.toString();
 
-            const token = jws.sign({ email, userId }, JWT_SECRET, { expiresIn: '1h' });
+            const token = jws.sign({ email, userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return res.status(200).json({ token, userId });
         }
 
