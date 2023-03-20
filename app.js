@@ -3,11 +3,13 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const helmet = require('helmet');
+const morgan = require('morgan');
 const { v4 } = require('uuid');
 
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
 const feedRouter = require('./routes/feed');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -35,6 +37,7 @@ const fileFilter = (req, file, cb) => {
     return cb(null, false);
 };
 
+app.use(morgan('combined', { stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' }) }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors);
 app.use(bodyParser.json());
