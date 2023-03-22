@@ -9,10 +9,6 @@ module.exports = {
                 origin: 'http://localhost:3000',
             },
         });
-        // .on('connection', (socket) => {
-        //     io = socket;
-        //     console.log('webSocket connected');
-        // });
 
         return io;
     },

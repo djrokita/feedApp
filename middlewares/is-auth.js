@@ -1,7 +1,7 @@
-const jws = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const Post = require('../models/feed');
 
-exports.isAuthenticated = async (req, res, next) => {
+exports.isAuthenticated = (req, res, next) => {
     const tokenHeader = req.get('Authentication');
 
     try {
@@ -14,7 +14,7 @@ exports.isAuthenticated = async (req, res, next) => {
 
         const token = tokenHeader.replace('Bearer', '').trim();
 
-        const data = jws.verify(token, process.env.JWT_SECRET);
+        const data = jwt.verify(token, process.env.JWT_SECRET);
         req.userId = data.userId;
     } catch (err) {
         if (!err.statusCode) {
@@ -61,8 +61,6 @@ exports.isAuthorized = async (req, res, next) => {
 
             throw error;
         }
-
-        next();
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -70,4 +68,6 @@ exports.isAuthorized = async (req, res, next) => {
 
         next(err);
     }
+
+    next();
 };
