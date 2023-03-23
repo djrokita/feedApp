@@ -16,12 +16,10 @@ exports.getUser = async (req, res, next) => {
         const user = await User.findById(userId);
 
         if (!user) {
-            if (!userId) {
-                const error = new Error('No user found');
-                error.statusCode = 404;
+            const error = new Error('No user found');
+            error.statusCode = 404;
 
-                throw error;
-            }
+            throw error;
         }
 
         res.status(200).json(user);

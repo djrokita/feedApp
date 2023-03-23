@@ -5,20 +5,6 @@ const jwt = require('jsonwebtoken');
 const { isAuthenticated, isAuthorized } = require('../middlewares/is-auth');
 const Post = require('../models/feed');
 
-const mockResponse = () => {
-    const res = {};
-    res.status = sinon.stub().returns(res);
-    res.json = sinon.stub().returns(res);
-    return res;
-};
-
-const mockRequest = (header) => {
-    const req = {};
-    req.get = sinon.stub().returns(undefined);
-    // res.json = sinon.stub().returns(res);
-    return req;
-};
-
 describe('Middlewares', function () {
     describe('Authentication', function () {
         it('should pass 422 error if no "Authentication" header is provided', function () {
@@ -31,7 +17,8 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(422);
         });
 
@@ -74,7 +61,8 @@ describe('Middlewares', function () {
             jwt.verify.restore();
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(500);
         });
 
@@ -106,7 +94,8 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(422);
             expect(error).has.property('message').that.is.equal('Not authenticated');
         });
@@ -122,7 +111,8 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(400);
             expect(error).has.property('message').that.is.equal('No referance to post');
         });
@@ -145,7 +135,8 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(404);
             expect(error).has.property('message').that.is.equal('No post found');
         });
@@ -174,7 +165,8 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.exist;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(403);
             expect(error).has.property('message').that.is.equal('Not authorized action');
         });
@@ -201,7 +193,7 @@ describe('Middlewares', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
-            expect(error).to.be.not.exist;
+            expect(error).not.to.exist;
         });
     });
 });
