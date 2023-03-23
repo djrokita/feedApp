@@ -6,13 +6,26 @@ const { isAuthenticated, isAuthorized } = require('../middlewares/is-auth');
 const Post = require('../models/feed');
 
 describe('Middlewares', function () {
+    let next;
+
+    beforeEach(function () {
+        next = sinon.spy();
+    });
+
     describe('Authentication', function () {
+        beforeEach(function () {
+            sinon.stub(jwt, 'verify');
+        });
+
+        afterEach(function () {
+            jwt.verify.restore();
+        });
+
         it('should pass 422 error if no "Authentication" header is provided', function () {
             const req = {
                 get: sinon.stub().returns(undefined),
             };
 
-            const next = sinon.spy();
             isAuthenticated(req, {}, next);
             const error = next.args[0][0];
 
@@ -27,11 +40,9 @@ describe('Middlewares', function () {
                 get: sinon.stub().returns('token'),
             };
 
-            sinon.stub(jwt, 'verify');
             isAuthenticated(req, {}, () => {});
 
             expect(jwt.verify.called).to.be.true;
-            jwt.verify.restore();
         });
 
         it('should attach extracted "userId" to request', function () {
@@ -39,9 +50,8 @@ describe('Middlewares', function () {
                 get: sinon.stub().returns('token'),
             };
 
-            sinon.stub(jwt, 'verify').returns({ userId: 'abc' });
+            jwt.verify.returns({ userId: 'abc' });
             isAuthenticated(req, {}, () => {});
-            jwt.verify.restore();
 
             expect(req).has.property('userId');
         });
@@ -51,15 +61,12 @@ describe('Middlewares', function () {
                 get: sinon.stub().returns('token'),
             };
 
-            sinon.stub(jwt, 'verify').throws();
+            jwt.verify.throws();
 
-            const next = sinon.spy();
             isAuthenticated(req, {}, next);
             const error = next.args[0][0];
 
             expect(jwt.verify.called).to.be.true;
-            jwt.verify.restore();
-
             expect(next.called).to.be.true;
             expect(error).to.exist;
             expect(error).to.be.an('error');
@@ -71,25 +78,31 @@ describe('Middlewares', function () {
                 get: sinon.stub().returns('token'),
             };
 
-            sinon.stub(jwt, 'verify').returns({ userId: 'abc' });
-            const next = sinon.spy();
+            jwt.verify.returns({ userId: 'abc' });
 
             isAuthenticated(req, {}, next);
 
             expect(next.called).to.be.true;
             expect(next.args[0]).to.be.empty;
-
-            jwt.verify.restore();
         });
     });
 
     describe('Authorization', function () {
+        let postMock;
+
+        beforeEach(function () {
+            postMock = sinon.mock(Post);
+        });
+
+        afterEach(function () {
+            postMock.restore();
+        });
+
         it('should throw 422 "Not authenticated" error if no userId is provided', async function () {
             const req = {
                 params: {},
             };
 
-            const next = sinon.spy();
             await isAuthorized(req, {}, next);
             const error = next.args[0][0];
 
@@ -106,7 +119,6 @@ describe('Middlewares', function () {
                 params: {},
             };
 
-            const next = sinon.spy();
             await isAuthorized(req, {}, next);
             const error = next.args[0][0];
 
@@ -125,12 +137,9 @@ describe('Middlewares', function () {
                 },
             };
 
-            const postMockModel = sinon.mock(Post);
-            postMockModel.expects('findById').returns(null);
+            postMock.expects('findById').returns(null);
 
-            const next = sinon.spy();
             await isAuthorized(req, {}, next);
-            postMockModel.restore();
 
             const error = next.args[0][0];
 
@@ -155,12 +164,9 @@ describe('Middlewares', function () {
                 },
             };
 
-            const postMockModel = sinon.mock(Post);
-            postMockModel.expects('findById').returns(post);
+            postMock.expects('findById').returns(post);
 
-            const next = sinon.spy();
             await isAuthorized(req, {}, next);
-            postMockModel.restore();
 
             const error = next.args[0][0];
 
@@ -183,12 +189,9 @@ describe('Middlewares', function () {
                 creator: 'defaultUserId',
             };
 
-            const postMockModel = sinon.mock(Post);
-            postMockModel.expects('findById').returns(post);
+            postMock.expects('findById').returns(post);
 
-            const next = sinon.spy();
             await isAuthorized(req, {}, next);
-            postMockModel.restore();
 
             const error = next.args[0][0];
 
