@@ -2,7 +2,7 @@ const express = require('express');
 
 const userController = require('../controllers/user');
 const validators = require('../middlewares/validators');
-const { isAuthenticated, isAuthorized } = require('../middlewares/is-auth');
+const { isAuthenticated } = require('../middlewares/is-auth');
 
 const router = express.Router();
 

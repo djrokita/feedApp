@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const User = require('../models/user');
-const { getUser } = require('../controllers/user');
+const { getUser, updateUserStatus } = require('../controllers/user');
 
 const mockResponse = () => {
     const res = {};
@@ -19,19 +19,19 @@ const mockRequest = (header) => {
 };
 
 describe('User controller', function () {
-    describe('GET user', function () {
-        let userMock, next, res;
+    let userMock, next, res;
 
-        beforeEach(function () {
-            userMock = sinon.mock(User);
-            next = sinon.spy();
-            res = mockResponse();
-        });
+    beforeEach(function () {
+        userMock = sinon.mock(User);
+        next = sinon.spy();
+        res = mockResponse();
+    });
 
-        afterEach(function () {
-            userMock.restore();
-        });
+    afterEach(function () {
+        userMock.restore();
+    });
 
+    describe('get user', function () {
         it('should pass 422 error if no user is logged', async function () {
             const req = {};
 
@@ -64,7 +64,7 @@ describe('User controller', function () {
             expect(res.json.calledWith(user)).to.be.true;
         });
 
-        it('should throw 404 error if no user found', async function () {
+        it('should throw 404 error if no user is found', async function () {
             const req = {
                 userId: 'xyz',
             };
@@ -97,6 +97,107 @@ describe('User controller', function () {
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(500);
+        });
+    });
+
+    describe('update user status', function () {
+        it('should pass 422 error if no user is logged', async function () {
+            const req = {
+                body: {},
+            };
+
+            await updateUserStatus(req, {}, next);
+
+            const error = next.args[0][0];
+
+            expect(next.called).to.be.true;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
+            expect(error).has.property('statusCode').that.is.equal(422);
+            expect(error).has.property('message').that.is.equal('Not authenticated');
+        });
+
+        it('should throw 404 error if no user is found', async function () {
+            const req = {
+                userId: 'xyz',
+                body: {},
+            };
+
+            userMock.expects('findById').returns(null);
+
+            await updateUserStatus(req, res, next);
+
+            const error = next.args[0][0];
+
+            expect(next.called).to.be.true;
+            expect(error).to.exist;
+            expect(error).to.be.an('error');
+            expect(error).has.property('statusCode').that.is.equal(404);
+            expect(error).has.property('message').that.is.equal('No user found');
+        });
+
+        // Couldn't handle with "validationResult" :(
+        // it('should throw 422 if user status is invalid', async function () {
+        //     const req = {
+        //         userId: 'xyz',
+        //         body: {
+        //             status: '',
+        //         },
+        //     };
+
+        //     const result = { isEmpty: sinon.stub().returns(false) };
+
+        //     sinon.stub(check, 'validationResult').returns(result);
+
+        //     await updateUserStatus(req, res, next);
+
+        //     const error = next.args[0][0];
+
+        //     expect(next.called).to.be.true;
+        //     expect(error).to.exist;
+        //     expect(error).to.be.an('error');
+        //     expect(error).has.property('statusCode').that.is.equal(500);
+        // });
+
+        it('should update user status', async function () {
+            const req = {
+                userId: 'xyz',
+                body: { status: 'admin' },
+            };
+
+            const user = {
+                email: 'test@test.com',
+                status: 'user',
+                save: sinon.stub(),
+            };
+
+            userMock.expects('findById').returns(user);
+
+            await updateUserStatus(req, res, next);
+
+            expect(next.called).to.be.false;
+            expect(user.save.called).to.be.true;
+            expect(user.status).equals('admin');
+        });
+
+        it('should send correct response', async function () {
+            const req = {
+                userId: 'xyz',
+                body: { status: 'admin' },
+            };
+
+            const user = {
+                email: 'test@test.com',
+                status: 'user',
+                save: sinon.stub(),
+            };
+
+            userMock.expects('findById').returns(user);
+
+            await updateUserStatus(req, res, next);
+
+            expect(res.status.calledWith(200)).to.be.true;
+            expect(res.json.calledWith({ message: 'Updated successfully' })).to.be.true;
         });
     });
 });
