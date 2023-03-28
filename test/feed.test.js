@@ -14,13 +14,6 @@ const mockResponse = () => {
     return res;
 };
 
-const mockRequest = (header) => {
-    const req = {};
-    req.get = sinon.stub().returns(undefined);
-    // res.json = sinon.stub().returns(res);
-    return req;
-};
-
 describe('Feed controller', function () {
     let postMock, ioMock, next, res;
 
@@ -51,6 +44,7 @@ describe('Feed controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(500);
@@ -107,6 +101,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(500);
@@ -126,6 +121,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(404);
@@ -151,9 +147,7 @@ describe('Feed controller', function () {
 
                 expect(next.called).to.be.false;
                 expect(res.status.calledWith(200)).to.be.true;
-                expect(res.json.called).to.be.true;
-
-                sinon.assert.calledWith(res.json, sinon.match({ message: 'Post fetched successfully', post }));
+                expect(res.json.calledWith({ message: 'Post fetched successfully', post })).to.be.true;
             });
         });
 
@@ -171,6 +165,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(422);
@@ -191,6 +186,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(500);
@@ -221,12 +217,8 @@ describe('Feed controller', function () {
 
                 expect(next.called).to.be.false;
                 expect(res.status.calledWith(201)).to.be.true;
-                expect(res.json.called).to.be.true;
+                expect(res.json.calledWith({ message: 'Post created succesfully', post: createdPost })).to.be.true;
 
-                sinon.assert.calledWith(
-                    res.json,
-                    sinon.match({ message: 'Post created succesfully', post: createdPost })
-                );
                 sinon.assert.calledWith(io.getIO().emit, sinon.match('posts'), sinon.match({ type: 'create', post }));
             });
         });
@@ -246,6 +238,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(404);
@@ -266,6 +259,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(500);
@@ -287,9 +281,9 @@ describe('Feed controller', function () {
 
                 expect(next.called).to.be.false;
                 expect(res.status.calledWith(200)).to.be.true;
-                expect(res.json.called).to.be.true;
+                expect(res.json.calledWith({ message: 'Post removed successfully', postId: req.params.postId })).to.be
+                    .true;
 
-                sinon.assert.calledWith(res.json, sinon.match({ message: 'Post removed successfully' }));
                 sinon.assert.calledWith(
                     io.getIO().emit,
                     sinon.match('posts'),
@@ -319,6 +313,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(404);
@@ -343,6 +338,7 @@ describe('Feed controller', function () {
                 const error = next.args[0][0];
 
                 expect(next.called).to.be.true;
+                expect(res.json.called).to.be.false;
                 expect(error).to.exist;
                 expect(error).to.be.an('error');
                 expect(error).has.property('statusCode').that.is.equal(500);
@@ -369,7 +365,6 @@ describe('Feed controller', function () {
 
                 expect(next.called).to.be.false;
                 expect(res.status.calledWith(200)).to.be.true;
-                expect(res.json.called).to.be.true;
 
                 sinon.assert.calledWith(res.json, sinon.match({ message: 'Post updated successfully' }));
                 sinon.assert.calledWith(io.getIO().emit, sinon.match('posts'), sinon.match({ type: 'update' }));

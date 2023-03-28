@@ -11,13 +11,6 @@ const mockResponse = () => {
     return res;
 };
 
-const mockRequest = (header) => {
-    const req = {};
-    req.get = sinon.stub().returns(undefined);
-    // res.json = sinon.stub().returns(res);
-    return req;
-};
-
 describe('User controller', function () {
     let userMock, next, res;
 
@@ -40,6 +33,7 @@ describe('User controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(422);
@@ -76,6 +70,7 @@ describe('User controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(404);
@@ -94,6 +89,7 @@ describe('User controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(500);
@@ -111,6 +107,7 @@ describe('User controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(422);
@@ -130,6 +127,7 @@ describe('User controller', function () {
             const error = next.args[0][0];
 
             expect(next.called).to.be.true;
+            expect(res.json.called).to.be.false;
             expect(error).to.exist;
             expect(error).to.be.an('error');
             expect(error).has.property('statusCode').that.is.equal(404);
