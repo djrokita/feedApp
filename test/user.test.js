@@ -32,7 +32,7 @@ describe('User controller', function () {
     });
 
     describe('get user', function () {
-        it('should pass 422 error if no user is logged', async function () {
+        it('should pass 422 error if there is no user logged', async function () {
             const req = {};
 
             await getUser(req, {}, next);
@@ -64,7 +64,7 @@ describe('User controller', function () {
             expect(res.json.calledWith(user)).to.be.true;
         });
 
-        it('should throw 404 error if no user is found', async function () {
+        it('should throw 404 error if there is no user found', async function () {
             const req = {
                 userId: 'xyz',
             };
@@ -101,7 +101,7 @@ describe('User controller', function () {
     });
 
     describe('update user status', function () {
-        it('should pass 422 error if no user is logged', async function () {
+        it('should pass 422 error if there is no user logged', async function () {
             const req = {
                 body: {},
             };
@@ -117,7 +117,7 @@ describe('User controller', function () {
             expect(error).has.property('message').that.is.equal('Not authenticated');
         });
 
-        it('should throw 404 error if no user is found', async function () {
+        it('should throw 404 error if there is no user found', async function () {
             const req = {
                 userId: 'xyz',
                 body: {},

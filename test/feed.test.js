@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const io = require('../sockets');
 
 const Post = require('../models/feed');
-const { getPosts, getPost, createPost, deletePost } = require('../controllers/feed');
+const { getPosts, getPost, createPost, deletePost, updatePost } = require('../controllers/feed');
 const imageUtils = require('../utils/images');
 
 const mockResponse = () => {
@@ -112,7 +112,7 @@ describe('Feed controller', function () {
                 expect(error).has.property('statusCode').that.is.equal(500);
             });
 
-            it('should throw 404 error if no post is found', async function () {
+            it('should throw 404 error if there is no post found', async function () {
                 const req = {
                     params: {
                         postId: 'xyz',
@@ -132,7 +132,7 @@ describe('Feed controller', function () {
                 expect(error).has.property('message').that.is.equal('No post found');
             });
 
-            it('should pass data with response if post is found in db', async function () {
+            it('should pass data with response if there is post found in db', async function () {
                 const req = {
                     params: {
                         postId: 'xyz',
@@ -196,7 +196,7 @@ describe('Feed controller', function () {
                 expect(error).has.property('statusCode').that.is.equal(500);
             });
 
-            it('should pass data if new post is created', async function () {
+            it('should pass data if there is new post created', async function () {
                 const req = {
                     body: {
                         title: 'title',
@@ -271,7 +271,7 @@ describe('Feed controller', function () {
                 expect(error).has.property('statusCode').that.is.equal(500);
             });
 
-            it('should pass data if post is deleted', async function () {
+            it('should pass data if there is post deleted', async function () {
                 const req = {
                     params: {
                         postId: 'defalt_post_ID',
@@ -297,6 +297,82 @@ describe('Feed controller', function () {
                 );
 
                 imageUtils.clearImage.restore();
+            });
+        });
+
+        describe('update post', function () {
+            it('should throw 404 error if there is no post found', async function () {
+                const req = {
+                    params: {
+                        postId: 'defalt_post_ID',
+                    },
+                    body: {
+                        title: 'new title',
+                        content: 'changed content',
+                    },
+                };
+
+                postMock.expects('findById').returns(null);
+
+                await updatePost(req, res, next);
+
+                const error = next.args[0][0];
+
+                expect(next.called).to.be.true;
+                expect(error).to.exist;
+                expect(error).to.be.an('error');
+                expect(error).has.property('statusCode').that.is.equal(404);
+                expect(error).has.property('message').that.is.equal('No post found');
+            });
+
+            it('should throw 500 error if db throws', async function () {
+                const req = {
+                    params: {
+                        postId: 'defalt_post_ID',
+                    },
+                    body: {
+                        title: 'new title',
+                        content: 'changed content',
+                    },
+                };
+
+                postMock.expects('findById').throws();
+
+                await updatePost(req, res, next);
+
+                const error = next.args[0][0];
+
+                expect(next.called).to.be.true;
+                expect(error).to.exist;
+                expect(error).to.be.an('error');
+                expect(error).has.property('statusCode').that.is.equal(500);
+            });
+
+            it('should pass data if there is post updated', async function () {
+                const req = {
+                    params: {
+                        postId: 'defalt_post_ID',
+                    },
+                    body: {
+                        title: 'new title',
+                        content: 'changed content',
+                    },
+                };
+
+                const post = {
+                    populate: sinon.spy(),
+                };
+
+                postMock.expects('findById').returns({ save: sinon.stub().returns(post) });
+
+                await updatePost(req, res, next);
+
+                expect(next.called).to.be.false;
+                expect(res.status.calledWith(200)).to.be.true;
+                expect(res.json.called).to.be.true;
+
+                sinon.assert.calledWith(res.json, sinon.match({ message: 'Post updated successfully' }));
+                sinon.assert.calledWith(io.getIO().emit, sinon.match('posts'), sinon.match({ type: 'update' }));
             });
         });
     });
