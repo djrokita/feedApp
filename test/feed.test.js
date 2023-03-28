@@ -215,7 +215,7 @@ describe('Feed controller', function () {
                 const createdPost = { ...post, creator: { name: 'John' } };
                 const populateSpy = sinon.stub().returns(createdPost);
 
-                sinon.stub(Post.prototype, 'save').callsFake(() => ({ ...post, populate: populateSpy }));
+                sinon.stub(Post.prototype, 'save').resolves({ ...post, populate: populateSpy });
 
                 await createPost(req, res, next);
 
