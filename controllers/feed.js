@@ -1,11 +1,8 @@
 const { validationResult } = require('express-validator/check');
 const io = require('../sockets');
 
-const path = require('path');
-const fs = require('fs');
-
 const Post = require('../models/feed');
-const { getIO } = require('../sockets');
+const imageUtils = require('../utils/images');
 
 exports.getPosts = async (req, res, next) => {
     const currentPage = req.query.page;
@@ -114,7 +111,7 @@ exports.updatePost = async (req, res, next) => {
         }
 
         if (req.file) {
-            clearImage(post.imageUrl);
+            imageUtils.clearImage(post.imageUrl);
             imageUrl = req.file.path.replace('\\', '/');
         } else {
             imageUrl = post.imageUrl;
@@ -145,6 +142,7 @@ exports.deletePost = async (req, res, next) => {
 
     try {
         const post = await Post.findById(postId);
+
         if (!post) {
             const error = new Error('No post found');
             error.statusCode = 404;
@@ -155,7 +153,7 @@ exports.deletePost = async (req, res, next) => {
         imageUrl = post.imageUrl;
 
         await post.remove();
-        clearImage(imageUrl);
+        imageUtils.clearImage(imageUrl);
 
         io.getIO().emit('posts', { type: 'delete', postId, userId: req.userId });
 
@@ -167,9 +165,4 @@ exports.deletePost = async (req, res, next) => {
 
         next(err);
     }
-};
-
-const clearImage = (imageUrl) => {
-    const imagePath = path.join(__dirname, '..', imageUrl);
-    fs.unlink(imagePath, (err) => console.log(err));
 };
